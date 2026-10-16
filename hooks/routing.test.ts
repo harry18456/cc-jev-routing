@@ -39,6 +39,8 @@ type Options = {
   messagesFail?: boolean
   // What $.settings.read() returns (Claude Code's merged settings, e.g. its `language`).
   settings?: Record<string, unknown>
+  // Which submitted prompts the engine drops (a settings hook's block).
+  drop?: (text: string) => boolean
 }
 
 function world(on: any, options: Options = {}) {
@@ -82,6 +84,7 @@ function world(on: any, options: Options = {}) {
     return options.jev ? options.jev(state.prompt) : ok(jevBody('haiku', 0.95))
   })
   on('session.start', ($: any, e: any) => ({ cwd: e.cwd }))
+  on('prompt.submit', ($: any, e: any) => options.drop?.(e.text) ? { drop: 'blocked by a settings hook' } : { text: e.text })
   on('turn.start', ($: any, e: any) => ({ turnId: e.turnId }))
   on('turn.step', async function* ($: any, e: any) {
     w.steps.push({ model: e.model, index: e.index, agentId: e.agentId, effort: e.effort })
@@ -95,6 +98,7 @@ function world(on: any, options: Options = {}) {
 const start = ($: any, cwd = '/repo') => $.session.start({ cwd, surface: null, isInteractive: false })
 const jev = ($: any, args = 'status') => $.command.run({ command: 'jev', args })
 const begin = ($: any, turnId: string, text: string, extra: Record<string, unknown> = {}) => $.turn.start({ turnId, text, ...extra })
+const submit = ($: any, text: string, attachments?: Array<Record<string, unknown>>) => $.prompt.submit({ text, ...(attachments ? { attachments } : {}) })
 const complete = ($: any, turnId: string) => $.turn.complete({ turnId, answer: 'ok', durationMs: 1, isAborted: false, reason: 'answer' })
 const spawn = ($: any, prompt: string, extra: Record<string, unknown> = {}) =>
   $.agent.spawn({ prompt, description: 'a task', subagentType: 'general-purpose', provider: { kind: 'core', tier: 'core' }, parentModel: SONNET, ...extra })
@@ -246,6 +250,67 @@ test('a continuation turn, a slash command turn or a task notification has nothi
   expect(w.prompts).toEqual(['which file defines register?'])
   expect(models(w)).toEqual([HAIKU, SONNET, SONNET, SONNET])
   expect(w.statuses.filter(s => s === 'jev → - (no-prompt)')).toHaveLength(3)
+})
+
+// ── attachments ────────────────────────────────────────────────────────────
+
+test('a prompt with an image keeps the session model and effort without asking Jev; the next text-only prompt is routed again', async ($, on) => {
+  const w = world(on)
+  await start($)
+  await submit($, 'fix this', [{ type: 'image', mediaType: 'image/png' }])
+  await turn($, 'fix this', SONNET, 't1')
+  await submit($, 'which file defines register?')
+  await turn($, 'which file defines register?', SONNET, 't2')
+
+  expect(w.prompts).toEqual(['which file defines register?'])
+  expect(models(w)).toEqual([SONNET, HAIKU])
+  expect(w.steps[0]!.effort).toBe('medium')
+  expect(w.statuses.filter(s => s.startsWith('jev →'))).toEqual(['jev → - (keep-attachment)', 'jev → haiku (routed)'])
+})
+
+test('an image without text is keep-attachment, not no-prompt; a document counts as well', async ($, on) => {
+  const w = world(on)
+  await start($)
+  await submit($, '', [{ type: 'image', mediaType: 'image/png' }])
+  await turn($, '', SONNET, 't1')
+  await submit($, 'summarise this', [{ type: 'document', mediaType: 'application/pdf' }])
+  await turn($, 'summarise this', SONNET, 't2')
+
+  expect(w.fetches).toHaveLength(0)
+  expect(models(w)).toEqual([SONNET, SONNET])
+  expect(w.statuses.filter(s => s.startsWith('jev →'))).toEqual(['jev → - (keep-attachment)', 'jev → - (keep-attachment)'])
+  expect((await jev($)).text).toContain('last: keep-attachment - conf=- 0ms (document attached; not judged)')
+})
+
+test('effort-only leaves the effort of a turn with an attachment alone', { options: { policy: 'effort-only' } }, async ($, on) => {
+  const w = world(on)
+  await start($)
+  await submit($, 'rename foo to bar as in the screenshot', [{ type: 'image' }])
+  await turn($, 'rename foo to bar as in the screenshot', SONNET, 't1')
+
+  expect(w.fetches).toHaveLength(0)
+  expect(w.steps.map(s => [s.model, s.effort])).toEqual([[SONNET, 'medium']])
+})
+
+test('a dropped submission with an image is forgotten; the same text sent again is judged', async ($, on) => {
+  const w = world(on, { drop: text => text === 'fix this' })
+  await start($)
+  await submit($, 'fix this', [{ type: 'image' }])
+  await turn($, 'fix this', SONNET, 't1')
+
+  expect(w.prompts).toEqual(['fix this'])
+  expect(models(w)).toEqual([HAIKU])
+})
+
+test('a session that is off reports disabled for a turn with an image, not keep-attachment', { options: { enabled: false } }, async ($, on) => {
+  const w = world(on)
+  await start($)
+  await submit($, 'fix this', [{ type: 'image' }])
+  await turn($, 'fix this', SONNET, 't1')
+
+  expect(w.fetches).toHaveLength(0)
+  expect(models(w)).toEqual([SONNET])
+  expect(last(w)).toBe('jev → - (disabled)')
 })
 
 test('a keep decision never overrides the model the engine resolved for a later step', async ($, on) => {

@@ -136,12 +136,12 @@ Layers, highest first:
 
 One module, `hooks/register.ts`:
 
-1. `turn.start` remembers the prompt text of the turn, bound to the turn's id. A continuation (no typed prompt), a slash command's line or a turn the engine starts itself (a background task's notification) has nothing of yours to judge and stays on the session's model.
+1. `turn.start` remembers the prompt text of the turn, bound to the turn's id. A continuation (no typed prompt), a slash command's line or a turn the engine starts itself (a background task's notification) has nothing of yours to judge and stays on the session's model. So does a prompt that carried an **attachment** (an image, a document): `prompt.submit` tells the plugin an attachment entered, never its content, and Jev would judge the text alone ("fix this" plus a screenshot), so the turn keeps the session's model and effort under every policy (`keep-attachment`).
 2. The turn's first `turn.step` sends to `https://api.typesafe.ai/v1/systemone` the prompt plus the exchange before it — the previous user prompt and the previous assistant reply, each cut to 300 characters — with one `choice` question (the criteria are in `hooks/question.ts`), racing a 2 s timeout. The previous exchange is what lets a short follow-up ("and the other one?") be judged in context; the question tells Jev not to let an unrelated previous task move the tier of a new one.
 3. The gates run in order: confidence below `min_confidence` → keep; the session's own tier → keep; under `down-only`, a session model whose id names no tier → keep, a tier above the session's → keep; under `effort-only`, the effort moves instead of the model; otherwise route.
 4. Only a routed decision names a model (`next({ ...e, model })`) and only an effort decision names an effort. Later steps of the same turn reuse it; every other step passes through with whatever the engine resolved, fallbacks included. A routed model that returns no response hands the retry back to the session's model. `turn.complete` forgets the turn.
 5. `agent.spawn` does the same once per subagent, from the brief alone, relative to the model the call named or the parent's; a routed decision sets the subagent's `model`.
-6. Every reason is visible: `routed`, `effort-down`, `effort-up`, `keep-low-confidence`, `keep-same`, `keep-policy`, `keep-unknown-model`, `disabled`, `no-key`, `no-prompt`, `paused`, `error`.
+6. Every reason is visible: `routed`, `effort-down`, `effort-up`, `keep-low-confidence`, `keep-same`, `keep-policy`, `keep-unknown-model`, `disabled`, `no-key`, `no-prompt`, `keep-attachment`, `paused`, `error`.
 7. Each successful call adds its input tokens to a tally in the plugin's own store, shown by `/jev status` and the panel as `jev spend: N calls · T input tokens ≈ US$…`. It is an estimate at the documented price: TypeSafe's API has no balance or usage endpoint (checked: every likely path answers 404 and the responses carry no quota headers), so the real balance is only in TypeSafe's console.
 
 ## Privacy and security
@@ -157,6 +157,7 @@ One module, `hooks/register.ts`:
 
 - **The cache accounting above.** On an expensive session model, `down-only` can cost more than it saves when heavy turns follow routed ones. If that is your pattern, use `policy effort-only` (no cache effect) and keep `subagents` on.
 - Routing judges the prompt and the exchange just before it, not the whole conversation.
+- Attachments are invisible to the plugin and to Jev. A turn whose prompt carried an image or a document is never routed (`keep-attachment`), so the saving on those turns is forgone; a prompt that merely names a file path is judged as text.
 - `effort-only` leaves subagents' models alone (a spawn has no effort to set).
 - The target ids are the first-party ones. On Bedrock, Vertex or a gateway that serves other ids, a routed step gets no response and the turn continues on the session's model; use `effort-only` there. A session model whose id carries no tier word (an inference-profile ARN, a custom alias) is never routed under `down-only`.
 - Skill selection is not part of this plugin.
@@ -165,7 +166,7 @@ One module, `hooks/register.ts`:
 
 ```
 claude plugin validate .
-claude plugin test .          # 89 tests, no network: Jev, the clock, the store, the transcript and the files are mocked; the band and the panel are mounted on every surface and their buttons pressed
+claude plugin test .          # 94 tests, no network: Jev, the clock, the store, the transcript and the files are mocked; the band and the panel are mounted on every surface and their buttons pressed
 ```
 
 ## Credits

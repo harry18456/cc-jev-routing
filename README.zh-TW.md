@@ -136,12 +136,12 @@ plugin 說的每一句話 —— band、面板、`/jev` 的回覆、狀態列 �
 
 一個模組 `hooks/register.ts`：
 
-1. `turn.start` 記住這個 turn 的 prompt 文字，綁在 turn id 上。續行的 turn（沒有新輸入）、slash 指令那一行、或引擎自己發起的 turn（背景任務完成的通知）沒有你的東西可判，直接留在 session 模型。
+1. `turn.start` 記住這個 turn 的 prompt 文字，綁在 turn id 上。續行的 turn（沒有新輸入）、slash 指令那一行、或引擎自己發起的 turn（背景任務完成的通知）沒有你的東西可判，直接留在 session 模型。帶**附件**（圖片、文件）的 prompt 也一樣：`prompt.submit` 只告訴 plugin 有附件進來，不給內容，Jev 只能看文字判斷（「修這個」加一張截圖），所以這個 turn 在任何 policy 之下都保留 session 的模型與 effort（`keep-attachment`）。
 2. turn 的第一個 `turn.step` 把 prompt 連同前一次對話 —— 上一則 user prompt 與上一則 assistant 回覆，各截 300 字 —— 送到 `https://api.typesafe.ai/v1/systemone`，問一題 `choice`（criteria 在 `hooks/question.ts`），同時跟 2 秒逾時賽跑。帶前一次對話是為了讓很短的追問（「那另一個呢？」）能在上下文裡判斷；題目也告訴 Jev 不要讓不相干的上一題影響新題的級別。
 3. 依序過門：信心低於 `min_confidence` → 留；跟 session 同級 → 留；`down-only` 之下，session 模型 id 看不出級別 → 留、級別比 session 高 → 留；`effort-only` 之下改 effort 不改模型；其餘才路由。
 4. 只有 `routed` 的決定會指定模型（`next({ ...e, model })`），只有 effort 決定會指定 effort。同一 turn 後面的 step 沿用；其他 step 一律照引擎解析出來的模型放行，fallback 也包含在內。被路由的模型若沒有回應，重試就回到 session 模型。`turn.complete` 時忘掉這個 turn。
 5. `agent.spawn` 對每個 subagent 做一次同樣的事：只看任務說明，相對於呼叫指定的模型或父層的模型；路由了就設 subagent 的 `model`。
-6. 每個原因都看得到：`routed`、`effort-down`、`effort-up`、`keep-low-confidence`、`keep-same`、`keep-policy`、`keep-unknown-model`、`disabled`、`no-key`、`no-prompt`、`paused`、`error`。
+6. 每個原因都看得到：`routed`、`effort-down`、`effort-up`、`keep-low-confidence`、`keep-same`、`keep-policy`、`keep-unknown-model`、`disabled`、`no-key`、`no-prompt`、`keep-attachment`、`paused`、`error`。
 7. 每次成功的呼叫會把 input tokens 加進 plugin 自己的 store，`/jev status` 與面板顯示成 `jev 用量: N 次 · T input tokens ≈ US$…`。這是依公告單價的本機估算：TypeSafe 的 API 沒有餘額或用量端點（試過：常見路徑全部 404，回應也沒有額度 header），真正的餘額只能在 TypeSafe console 看。
 
 ## 隱私與安全
@@ -157,6 +157,7 @@ plugin 說的每一句話 —— band、面板、`/jev` 的回覆、狀態列 �
 
 - **上面的 cache 帳。** session 模型很貴時，`down-only` 在重的 turn 接在被路由的 turn 之後會倒貼。你的用法是這樣的話，改用 `policy effort-only`（不碰 cache），`subagents` 保持開。
 - 路由只看 prompt 與前一次對話，不看整段對話。
+- plugin 與 Jev 都看不到附件。prompt 帶圖片或文件的 turn 永遠不路由（`keep-attachment`），這些 turn 省不到錢；只寫了檔案路徑的 prompt 仍照文字判。
 - `effort-only` 不動 subagent 的模型（spawn 時沒有 effort 可設）。
 - 目標模型 id 是第一方的那三個。在 Bedrock、Vertex 或提供其他 id 的 gateway 上，被路由的 step 不會有回應，turn 會接著用 session 模型跑完；那裡請用 `effort-only`。session 模型 id 看不出級別時（inference profile 的 ARN、自訂別名），`down-only` 之下永遠不路由。
 - 挑 skill 不在這個 plugin 的範圍。
@@ -165,7 +166,7 @@ plugin 說的每一句話 —— band、面板、`/jev` 的回覆、狀態列 �
 
 ```
 claude plugin validate .
-claude plugin test .          # 89 個測試，不連網：Jev、時鐘、store、對話紀錄、檔案都是 mock；band 與面板在四種 surface 掛載並按過每顆按鈕
+claude plugin test .          # 94 個測試，不連網：Jev、時鐘、store、對話紀錄、檔案都是 mock；band 與面板在四種 surface 掛載並按過每顆按鈕
 ```
 
 ## 致謝

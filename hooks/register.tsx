@@ -52,7 +52,7 @@ const PAUSE_MS = 5 * 60_000
 type Reason =
   | 'routed' | 'effort-down' | 'effort-up'
   | 'keep-low-confidence' | 'keep-policy' | 'keep-unknown-model' | 'keep-same'
-  | 'disabled' | 'no-key' | 'no-prompt' | 'paused' | 'error'
+  | 'disabled' | 'no-key' | 'no-prompt' | 'keep-attachment' | 'paused' | 'error'
 type Decision = {
   tier: string | null
   model: string
@@ -95,6 +95,14 @@ let pausedUntil = 0 // clock time until which Jev is not asked
 let pauseWhy = ''
 const prompts = new Map<string, string>() // turnId → the turn's prompt text, from turn.start
 const decisions = new Map<string, Decision>() // turnId → the decision its steps share
+// Submissions that carried images or other non-text items, by the text they
+// entered with, until their turn starts; then the kinds of each such turn's
+// attachments, by turnId. Jev never sees an attachment, so a prompt that may
+// lean on one is not judged by its text: the turn keeps the session's model
+// and effort (`keep-attachment`).
+const PENDING_MAX = 20
+const pendingAttachments: Array<{ text: string; kinds: string[] }> = []
+const attachments = new Map<string, string[]>()
 
 // `claude plugin validate` only lets `$` flow into top-level function
 // declarations of this file, so the helpers live here, not inside register.
@@ -513,11 +521,29 @@ export const register: Register = (on, options) => {
     return { text }
   })
 
+  // A submission that carried attachments is noted once it has entered (a
+  // dropped prompt starts no turn), under the text that reached the bottom,
+  // and claimed by the turn whose text that is. Observe only: a failure here
+  // leaves the prompt alone and the turn judged by its text, as before.
+  on('prompt.submit', async ($, e, next) => {
+    const result = await next(e)
+    const kinds = (e.attachments ?? []).map((a: { type: string }) => a.type)
+    if (kinds.length > 0 && result && !result.drop) {
+      pendingAttachments.push({ text: result.text ?? e.text, kinds })
+      if (pendingAttachments.length > PENDING_MAX) pendingAttachments.splice(0, pendingAttachments.length - PENDING_MAX)
+    }
+    return result
+  })
+
   // The prompt a turn proceeds with, bound to its turnId: "" for a
   // continuation, a slash command's line for a command. Subagent turns are
   // not routed here (their model is picked at agent.spawn), so their text is not kept.
   on('turn.start', async ($, e, next) => {
-    if (e.agentId === undefined) prompts.set(e.turnId, e.text)
+    if (e.agentId === undefined) {
+      prompts.set(e.turnId, e.text)
+      const i = pendingAttachments.findIndex(p => p.text === e.text)
+      if (i >= 0) attachments.set(e.turnId, pendingAttachments.splice(i, 1)[0]!.kinds)
+    }
     return next(e)
   })
 
@@ -527,15 +553,22 @@ export const register: Register = (on, options) => {
     let decision = decisions.get(e.turnId)
     if (!decision) {
       const prompt = prompts.get(e.turnId) ?? ''
-      const state: JevState = { prompt, ...(judgeable(prompt) ? await previousExchange($, prompt) : {}) }
-      decision = await decide($, { model: e.model, effort: e.effort }, state, 'turn')
+      // A turn whose prompt carried an attachment is not judged: Jev would see
+      // the text alone. The switches still come first, so a session that is
+      // off or has no key reports that, as for any other turn.
+      const kinds = attachments.get(e.turnId)
+      const unjudged = kinds !== undefined && (sessionEnabled ?? effective.enabled) && Boolean(await apiKey($))
+      const state: JevState = { prompt, ...(!unjudged && judgeable(prompt) ? await previousExchange($, prompt) : {}) }
+      decision = unjudged
+        ? keep(e.model, 'keep-attachment', `${kinds!.join(', ')} attached; not judged`)
+        : await decide($, { model: e.model, effort: e.effort }, state, 'turn')
       if (!(next as any).signal?.aborted) {
         decisions.set(e.turnId, decision)
         lastDecision = decision
       }
       if (decision.reason !== 'no-key') { try { await $.ui.status(`jev → ${decision.tier ?? '-'} (${decision.reason})`) } catch { /* headless */ } }
       await log($, 'decision', {
-        turnId: e.turnId, sessionModel: e.model, sessionEffort: e.effort ?? null, prompt: prompt.slice(0, 120),
+        turnId: e.turnId, sessionModel: e.model, sessionEffort: e.effort ?? null, prompt: prompt.slice(0, 120), attachments: kinds ?? null,
         context: { user: 'previous_user_prompt' in state, assistant: 'previous_assistant_reply' in state },
         minConfidence: effective.min_confidence, policy: effective.policy,
         ...decision,
@@ -586,6 +619,7 @@ export const register: Register = (on, options) => {
   on('turn.complete', async ($, e, next) => {
     decisions.delete(e.turnId)
     prompts.delete(e.turnId)
+    attachments.delete(e.turnId)
     return next(e)
   })
 
