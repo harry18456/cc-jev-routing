@@ -1,0 +1,69 @@
+{
+  "name": "jev-routing",
+  "displayName": "Jev Routing",
+  "version": "0.2.0",
+  "description": "Per-turn model routing for Claude Code: asks Jev (TypeSafe System One, ~400 ms, a fraction of a cent) which tier a prompt or a subagent's brief needs — haiku, sonnet, opus or fable — then rewrites that turn's or subagent's model, and moves the effort with it (low for haiku-tier prompts, high for opus- or fable-tier prompts above the session's tier that the policy keeps on the session's model). Down-only by default; a confidence gate keeps the session's model on close calls. /jev status|on|off|set|unset; settings in three layers (local / project / global).",
+  "author": {
+    "name": "Harry",
+    "url": "https://github.com/harry18456"
+  },
+  "homepage": "https://github.com/harry18456/cc-jev-routing",
+  "repository": "https://github.com/harry18456/cc-jev-routing",
+  "license": "MIT",
+  "keywords": ["jev", "typesafe", "model-routing", "router", "cost", "haiku", "sonnet", "opus", "fable", "turn.step", "mod", "claude-code"],
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "api_key": {
+      "type": "string",
+      "title": "TypeSafe API key",
+      "description": "Bearer key for api.typesafe.ai (get one at typesafe.ai). Falls back to the TYPESAFE_API_KEY environment variable when unset.",
+      "sensitive": true
+    },
+    "min_confidence": {
+      "type": "number",
+      "title": "Minimum confidence",
+      "description": "Below this Jev confidence (0–1) the turn keeps the session's model.",
+      "default": 0.6,
+      "min": 0,
+      "max": 1
+    },
+    "policy": {
+      "type": "string",
+      "title": "Model policy",
+      "description": "Which model switches Jev may make: down-only never picks a tier above the session's model; both also routes up (a cache rewrite on every switch); none never switches models (the effort switch still applies, and the prompt cache is never rebuilt).",
+      "options": ["down-only", "both", "none"],
+      "default": "down-only"
+    },
+    "effort": {
+      "type": "boolean",
+      "title": "Move the effort too",
+      "description": "A haiku-tier prompt runs at low effort; an opus- or fable-tier prompt above the session's tier that stays on the session's model (the policy kept it) runs at high. Changing effort never rebuilds the prompt cache. Off keeps the session's effort on every turn.",
+      "default": true
+    },
+    "enabled": {
+      "type": "boolean",
+      "title": "Route with Jev",
+      "description": "Off keeps every turn on the session's model. /jev on|off changes it for the current session only.",
+      "default": true
+    },
+    "subagents": {
+      "type": "boolean",
+      "title": "Route subagents too",
+      "description": "Also pick the tier for each subagent from its brief (the Agent tool's prompt), under the same policy relative to the model the subagent would have used. A subagent starts with an empty cache, so this never costs a cache rewrite.",
+      "default": true
+    },
+    "band": {
+      "type": "boolean",
+      "title": "Show the band",
+      "description": "One line above the prompt with the last decision, an on/off button and a button that opens the settings panel (/jev panel). Off hides it; /jev band on|off hides or shows it for the session.",
+      "default": true
+    },
+    "language": {
+      "type": "string",
+      "title": "Language",
+      "description": "The language of the band, the panel and /jev's replies. auto follows Claude Code's own language setting (then the system locale), else English.",
+      "options": ["auto", "en", "zh-TW"],
+      "default": "auto"
+    }
+  }
+}
