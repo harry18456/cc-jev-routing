@@ -1,8 +1,8 @@
 {
   "name": "jev-routing",
   "displayName": "Jev Routing",
-  "version": "0.2.0",
-  "description": "Per-turn model routing for Claude Code: asks Jev (TypeSafe System One, ~400 ms, a fraction of a cent) which tier a prompt or a subagent's brief needs — haiku, sonnet, opus or fable — then rewrites that turn's or subagent's model, and moves the effort with it (low for haiku-tier prompts, high for opus- or fable-tier prompts above the session's tier that the policy keeps on the session's model). Down-only by default; a confidence gate keeps the session's model on close calls. /jev status|on|off|set|unset; settings in three layers (local / project / global).",
+  "version": "0.3.0",
+  "description": "Per-turn model routing for Claude Code: asks Jev (TypeSafe System One, ~400 ms, a fraction of a cent) which tier a prompt or a subagent's brief needs — haiku, sonnet, opus or fable — then rewrites that turn's or subagent's model; a turn routed down runs at no more than high effort. Down-only by default, with an optional effort switch; a confidence gate keeps the session's model on close calls. /jev status|on|off|set|unset; settings in three layers (local / project / global).",
   "author": {
     "name": "Harry",
     "url": "https://github.com/harry18456"
@@ -37,8 +37,8 @@
     "effort": {
       "type": "boolean",
       "title": "Move the effort too",
-      "description": "A haiku-tier prompt runs at low effort; an opus- or fable-tier prompt above the session's tier that stays on the session's model (the policy kept it) runs at high. Changing effort never rebuilds the prompt cache. Off keeps the session's effort on every turn.",
-      "default": true
+      "description": "A haiku-tier prompt runs at low effort; an opus- or fable-tier prompt above the session's tier that stays on the session's model (the policy kept it) runs at high. Changing effort never rebuilds the prompt cache. Off by default: in the 2026-10 matrix runs it saved about 1% on opus and fable sessions and cost 10-18% more on haiku and sonnet ones. A turn routed down runs at no more than high effort either way.",
+      "default": false
     },
     "enabled": {
       "type": "boolean",

@@ -26,7 +26,10 @@ export type Layer = { name: LayerName; values: Partial<Settings>; path?: string;
 
 export const SETTINGS_KEY = 'jevRouting'
 export const POLICIES: readonly Policy[] = ['down-only', 'both', 'none']
-export const DEFAULTS: Settings = { min_confidence: 0.6, policy: 'down-only', effort: true, enabled: true, subagents: true, band: true, language: 'auto' }
+// The effort switch is off by default: in the 2026-10 matrix runs it saved
+// about 1% on opus and fable sessions and cost 10–18% more on haiku and sonnet
+// ones, with no change in how many tasks were done right.
+export const DEFAULTS: Settings = { min_confidence: 0.6, policy: 'down-only', effort: false, enabled: true, subagents: true, band: true, language: 'auto' }
 export const SCOPES: readonly Scope[] = ['local', 'project', 'global']
 export const KEYS: readonly Key[] = ['min_confidence', 'policy', 'effort', 'enabled', 'subagents', 'band', 'language']
 // Switches a project file may turn off but never on.
@@ -166,6 +169,14 @@ export function effortFor(tier: string, current: unknown): Effort | null {
   if (tier === 'haiku' && have > rank('low')) return 'low'
   if ((tier === 'opus' || tier === 'fable') && have < rank('high')) return 'high'
   return null
+}
+
+// A turn routed to a lower tier runs at no more than high effort, whatever
+// the switch says: in the 2026-10 matrix runs, sonnet at max effort took two
+// to three times as long on a hard task as the fable max session it stood in
+// for, at about the same cost. Unknown or numeric efforts are left alone.
+export function downEffort(current: unknown): Effort | null {
+  return rank(current) > rank('high') ? 'high' : null
 }
 
 export type StatusInput = {

@@ -10,7 +10,7 @@ Highlights:
 
 - **Down-only by default.** A turn is never routed *above* the session's model.
 - **Subagents too.** Each subagent's model is picked from its brief. A subagent starts with an empty cache, so this never costs a cache rewrite — it is the one saving with no catch.
-- **The effort moves too.** A haiku-tier prompt runs at low effort; an opus- or fable-tier prompt above the session's tier that the policy keeps on the session's model runs at high — a step up in thinking in place of the step up in model. Changing effort between turns keeps the prompt cache (measured). `policy none` + this switch never touches the model at all.
+- **Routed down, effort capped.** A turn routed to a lower tier runs at no more than high effort, so a max-effort session does not hand max effort to sonnet or haiku. An optional **effort switch** (off by default) also runs haiku-tier prompts at low effort and opus- or fable-tier prompts the policy keeps on the session's model at high. Changing effort between turns keeps the prompt cache (measured).
 - **A confidence gate.** Below `min_confidence` (0.6) the session's model stays. With the 0.1 question (three tiers), every routed decision above the gate on 62 prompts labelled blind by three raters matched the consensus label; *Settings* has the numbers for the 0.2 question.
 - **Fails open.** A timeout (2 s), an HTTP error, a missing key, a routed model that gives no response: the turn runs on the session's model and the reason shows in `/jev status`. Three Jev failures in a row (an exhausted quota, a dead key, an outage) pause the asking for five minutes, so a broken Jev costs you nothing but one status line.
 - **A band and a panel.** One line above the prompt shows the last decision with an on/off button; `/jev panel` (or the band's *settings* button) opens a panel with one button per setting. Both can be hidden.
@@ -28,6 +28,25 @@ Scripted sessions, the same prompts with routing off and on (October 2026, Claud
 | One subagent (count files) spawned from a sonnet session | US$0.224 | US$0.099 |
 
 Why the opus session lost: **every model you touch writes the conversation into its own cache once.** Routing lookups to haiku saves their cost, but when the next opus-tier turn arrives, opus has to write the whole context into *its* cache, at opus prices. The dearer the session model and the larger the context at that moment, the smaller the net saving. Sonnet sessions came out well ahead; a short opus session with one long opus turn did not. Subagent routing and effort changes have no such cost.
+
+### The matrix (October 2026)
+
+15 single-prompt coding tasks graded by hidden tests, four session models, six settings, three runs each: 396 headless runs. Cost against the same session with the plugin off:
+
+| Session | `down-only` | `both` | `none` + effort switch | Tasks done right, plugin off |
+|---|---:|---:|---:|---:|
+| haiku, medium effort | ±0% | +2439% | +11% | 14.3 of 15 |
+| sonnet, medium effort | −8% | +171% | +18% | 13.7 |
+| opus, max effort | **−21%** | −13% | −1% | 14.0 |
+| fable, max effort | **−17%** | −17% | −1% | 14.7 |
+
+- Routing down never lowered the number of tasks done right. Routing up from haiku did not raise it either: 13.7 against 14.3, from two tasks where sonnet missed one hidden test more often than haiku did.
+- Routing up only cost more: haiku solved every task already, so a bigger model had nothing to add.
+- The effort switch saved about 1% on opus and fable sessions and cost 10–18% more on haiku and sonnet ones, so it is off by default since 0.3.0.
+- The fable session took longer with `down-only` because a turn routed down kept max effort: sonnet at max spent 24–40 minutes on one hard task that fable did in 7–14. Since 0.3.0 a turn routed down runs at no more than high effort.
+- Each task was one prompt in a fresh session, so none of these runs paid the cache rewrite of the table above.
+
+Method, every table and the data: [docs/matrix-2026-10.md](docs/matrix-2026-10.md).
 
 Jev itself: p50 ≈ 400 ms inside a turn (p90 ≈ 750 ms), 500–700 input tokens at US$0.042 per million, output free — about US$0.00003 per decision.
 
@@ -58,7 +77,7 @@ A side-loaded plugin has no install dialog, so the key comes from the environmen
 ## The band and the panel
 
 ```
-jev ▸ on · down-only · effort on · haiku (routed) 0.95   off   settings   hide
+jev ▸ on · down-only · effort off · haiku (routed) 0.95   off   settings   hide
 ```
 
 The band sits above the prompt and shows routing on or off, the policy, the effort switch and the last decision. Its buttons answer a mouse click, or the keyboard once the band has focus (`ctrl+x` then `tab`): `o` toggles routing for the session, `s` opens the panel. *hide* removes it for the session (`/jev band on` brings it back); the `band` setting removes it for good. It steps aside while Claude Code shows its own feedback survey.
@@ -66,7 +85,7 @@ The band sits above the prompt and shows routing on or off, the policy, the effo
 ```
 Jev routing · on                                   [1] turn off
 policy          down-only   ← global               [2] next: both
-effort          true        ← global               [3] turn off
+effort          false       ← global               [3] turn on
 min_confidence  0.6         ← global               [4] −0.1  [5] +0.1
 subagents       true        ← global               [6] turn off
 band            shown       ← global               [7] hide
@@ -100,7 +119,7 @@ Everything the plugin says — the band, the panel, `/jev`'s replies, the status
 |---|---|---|---|
 | `min_confidence` | 0–1 | 0.6 | Below this Jev confidence the turn keeps the session's model |
 | `policy` | `down-only` \| `both` \| `none` | `down-only` | Which model switches Jev may make: `down-only` never picks a tier above the session's model; `both` also routes up (and pays the cache rewrite); `none` never switches models (`effort-only` from 0.1.0 reads as `none`) |
-| `effort` | `true` \| `false` | `true` | Move the effort too: `low` for a haiku-tier prompt, `high` for an opus- or fable-tier prompt above the session's tier that the policy keeps on the session's model; never a cache rewrite |
+| `effort` | `true` \| `false` | `false` | The effort switch: `low` for a haiku-tier prompt, `high` for an opus- or fable-tier prompt above the session's tier that the policy keeps on the session's model; never a cache rewrite. Off by default: in the matrix it saved about 1% on opus and fable sessions and cost 10–18% more on haiku and sonnet ones |
 | `enabled` | `true` \| `false` | `true` | Off keeps every turn on the session's model |
 | `subagents` | `true` \| `false` | `true` | Also route each subagent from its brief, under the same policy relative to the model it would have used |
 | `band` | `true` \| `false` | `true` | Show the band above the prompt |
@@ -147,7 +166,7 @@ One module, `hooks/register.tsx`:
 
 1. `turn.start` remembers the prompt text of the turn, bound to the turn's id. A continuation (no typed prompt), a slash command or a turn the engine starts itself (a background task's notification) has nothing of yours to judge and stays on the session's model. A slash command's turn arrives wrapped in `<command-message>` and `<command-name>`; its arguments are not judged either, because the work is the command's own and Jev never sees it. A prompt that carried an **attachment** (an image, a document) stays there too: `prompt.submit` tells the plugin an attachment entered, never its content, and Jev would judge the text alone ("fix this" plus a screenshot), so the turn keeps the session's model and effort under every policy (`keep-attachment`).
 2. The turn's first `turn.step` sends to `https://api.typesafe.ai/v1/systemone` the prompt plus the exchange before it — the previous user prompt and the previous assistant reply, each cut to 300 characters — with one `choice` question over the four tiers (the criteria are in `hooks/question.ts`: each tier is described by what the task needs, then by examples from code, writing, research and operations), racing a 2 s timeout. The previous exchange is what lets a short follow-up ("and the other one?") be judged in context; the question tells Jev not to let an unrelated previous task move the tier of a new one.
-3. The gates run in order: confidence below `min_confidence` → keep; the session's own tier → keep. Then the model, as the policy allows: under `down-only`, a session model whose id names no tier → keep, a tier above the session's → keep; under `both` always; under `none` never. Then the effort, when the switch is on: a haiku-tier prompt → `low` (whether or not the model moved); an opus- or fable-tier prompt above the session's tier whose model the policy kept → `high` (a session model whose id names no tier counts as below); a prompt routed up keeps the session's effort.
+3. The gates run in order: confidence below `min_confidence` → keep; the session's own tier → keep. Then the model, as the policy allows: under `down-only`, a session model whose id names no tier → keep, a tier above the session's → keep; under `both` always; under `none` never. Then the effort, when the switch is on: a haiku-tier prompt → `low` (whether or not the model moved); an opus- or fable-tier prompt above the session's tier whose model the policy kept → `high` (a session model whose id names no tier counts as below); a prompt routed up keeps the session's effort. A turn routed down runs at no more than `high`, switch or not.
 4. Only a routed decision names a model (`next({ ...e, model })`) and only a decision with an effort names one. Later steps of the same turn reuse it; every other field passes through with whatever the engine resolved, fallbacks included. A routed model that returns no response hands the retry back to the session's model. `turn.complete` forgets the turn.
 5. `agent.spawn` does the same once per subagent, from the brief alone, relative to the model the call named or the parent's; a routed decision sets the subagent's `model`. A resumed subagent (a `SendMessage` to one that finished) keeps the model it started on, and a fork runs on its parent's: the engine ignores a model set for either, so neither is judged (`keep-resume`, `keep-fork`).
 6. Every reason is visible: `routed`, `effort-down`, `effort-up`, `keep-low-confidence`, `keep-same`, `keep-policy`, `keep-unknown-model`, `disabled`, `no-key`, `no-prompt`, `keep-attachment`, `keep-resume`, `keep-fork`, `paused`, `error`.
@@ -164,7 +183,7 @@ One module, `hooks/register.tsx`:
 
 ## Known limits
 
-- **The cache accounting above.** On an expensive session model, `down-only` can cost more than it saves when heavy turns follow routed ones. If that is your pattern, set `policy none`: the effort switch still works and has no cache effect. Subagents are then not routed either, because a spawn has no effort to set.
+- **The cache accounting above.** On an expensive session model, `down-only` can cost more than it saves when heavy turns follow routed ones. If that is your pattern, set `policy none` and turn the effort switch on: the effort moves in place of the model, with no cache effect. Subagents are then not routed either, because a spawn has no effort to set.
 - Routing judges the prompt and the exchange just before it, not the whole conversation.
 - A slash command (a skill, a plugin's command) keeps the session's model for its whole turn: its work is defined in the command, which Jev never sees. A long skill run is therefore never routed; the subagents it spawns still are.
 - Attachments are invisible to the plugin and to Jev. A turn whose prompt carried an image or a document is never routed (`keep-attachment`), so the saving on those turns is forgone; a prompt that merely names a file path is judged as text.
@@ -176,7 +195,7 @@ One module, `hooks/register.tsx`:
 
 ```
 claude plugin validate .
-claude plugin test .          # 106 tests, no network: Jev, the clock, the store, the transcript and the files are mocked; the band and the panel are mounted on every surface and their buttons pressed
+claude plugin test .          # 109 tests, no network: Jev, the clock, the store, the transcript and the files are mocked; the band and the panel are mounted on every surface and their buttons pressed
 ```
 
 ## Credits

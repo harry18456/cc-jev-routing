@@ -1,0 +1,999 @@
+{
+ "overview": {
+  "runs": 396,
+  "runs_per_combination": 3,
+  "distinct_executions": 132,
+  "total_usd": 229.2,
+  "jev_decisions": 216,
+  "jev_errors": 1,
+  "jev_median_ms": 257,
+  "subagent_decisions": 3
+ },
+ "settings": [
+  {
+   "session": "haiku, medium effort",
+   "setting": "plugin off",
+   "cost_usd": 0.09,
+   "cost_vs_off": 0.0,
+   "cost_vs_off_per_run": [
+    0.0,
+    0.0
+   ],
+   "time_s": 448,
+   "time_vs_off": 0.0,
+   "hidden_test_score": 0.9926,
+   "tasks_done_right": 14.33,
+   "routed_up": 0,
+   "routed_down": 0,
+   "effort_up": 0,
+   "effort_down": 0,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.01,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 0.02,
+     "hidden_test_score": 0.9778
+    },
+    "hard": {
+     "cost_usd": 0.06,
+     "hidden_test_score": 1.0
+    }
+   }
+  },
+  {
+   "session": "haiku, medium effort",
+   "setting": "down-only",
+   "cost_usd": 0.09,
+   "cost_vs_off": 0.0,
+   "cost_vs_off_per_run": [
+    0.0,
+    0.0
+   ],
+   "time_s": 452,
+   "time_vs_off": 0.0086,
+   "hidden_test_score": 0.9926,
+   "tasks_done_right": 14.33,
+   "routed_up": 0,
+   "routed_down": 0,
+   "effort_up": 0,
+   "effort_down": 0,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.01,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 0.02,
+     "hidden_test_score": 0.9778
+    },
+    "hard": {
+     "cost_usd": 0.06,
+     "hidden_test_score": 1.0
+    }
+   }
+  },
+  {
+   "session": "haiku, medium effort",
+   "setting": "down-only + effort",
+   "cost_usd": 0.1,
+   "cost_vs_off": 0.1121,
+   "cost_vs_off_per_run": [
+    0.0166,
+    0.2544
+   ],
+   "time_s": 515,
+   "time_vs_off": 0.1484,
+   "hidden_test_score": 0.9926,
+   "tasks_done_right": 14.33,
+   "routed_up": 0,
+   "routed_down": 0,
+   "effort_up": 3,
+   "effort_down": 0,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.01,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 0.02,
+     "hidden_test_score": 0.9778
+    },
+    "hard": {
+     "cost_usd": 0.07,
+     "hidden_test_score": 1.0
+    }
+   }
+  },
+  {
+   "session": "haiku, medium effort",
+   "setting": "both",
+   "cost_usd": 2.26,
+   "cost_vs_off": 24.3934,
+   "cost_vs_off_per_run": [
+    21.1495,
+    29.4143
+   ],
+   "time_s": 552,
+   "time_vs_off": 0.2322,
+   "hidden_test_score": 0.9884,
+   "tasks_done_right": 13.67,
+   "routed_up": 10,
+   "routed_down": 0,
+   "effort_up": 0,
+   "effort_down": 0,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.01,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 0.2,
+     "hidden_test_score": 0.9667
+    },
+    "hard": {
+     "cost_usd": 2.05,
+     "hidden_test_score": 0.9984
+    }
+   }
+  },
+  {
+   "session": "haiku, medium effort",
+   "setting": "both + effort",
+   "cost_usd": 2.26,
+   "cost_vs_off": 24.3934,
+   "cost_vs_off_per_run": [
+    21.1495,
+    29.4143
+   ],
+   "time_s": 552,
+   "time_vs_off": 0.2322,
+   "hidden_test_score": 0.9884,
+   "tasks_done_right": 13.67,
+   "routed_up": 10,
+   "routed_down": 0,
+   "effort_up": 0,
+   "effort_down": 0,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.01,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 0.2,
+     "hidden_test_score": 0.9667
+    },
+    "hard": {
+     "cost_usd": 2.05,
+     "hidden_test_score": 0.9984
+    }
+   }
+  },
+  {
+   "session": "haiku, medium effort",
+   "setting": "none + effort",
+   "cost_usd": 0.1,
+   "cost_vs_off": 0.1121,
+   "cost_vs_off_per_run": [
+    0.0166,
+    0.2544
+   ],
+   "time_s": 515,
+   "time_vs_off": 0.1484,
+   "hidden_test_score": 0.9926,
+   "tasks_done_right": 14.33,
+   "routed_up": 0,
+   "routed_down": 0,
+   "effort_up": 3,
+   "effort_down": 0,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.01,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 0.02,
+     "hidden_test_score": 0.9778
+    },
+    "hard": {
+     "cost_usd": 0.07,
+     "hidden_test_score": 1.0
+    }
+   }
+  },
+  {
+   "session": "sonnet, medium effort",
+   "setting": "plugin off",
+   "cost_usd": 0.78,
+   "cost_vs_off": 0.0,
+   "cost_vs_off_per_run": [
+    0.0,
+    0.0
+   ],
+   "time_s": 278,
+   "time_vs_off": 0.0,
+   "hidden_test_score": 0.9884,
+   "tasks_done_right": 13.67,
+   "routed_up": 0,
+   "routed_down": 0,
+   "effort_up": 0,
+   "effort_down": 0,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.09,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 0.21,
+     "hidden_test_score": 0.9667
+    },
+    "hard": {
+     "cost_usd": 0.48,
+     "hidden_test_score": 0.9984
+    }
+   }
+  },
+  {
+   "session": "sonnet, medium effort",
+   "setting": "down-only",
+   "cost_usd": 0.71,
+   "cost_vs_off": -0.0848,
+   "cost_vs_off_per_run": [
+    -0.0936,
+    -0.0796
+   ],
+   "time_s": 286,
+   "time_vs_off": 0.0311,
+   "hidden_test_score": 0.9884,
+   "tasks_done_right": 13.67,
+   "routed_up": 0,
+   "routed_down": 4,
+   "effort_up": 0,
+   "effort_down": 0,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.03,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 0.21,
+     "hidden_test_score": 0.9667
+    },
+    "hard": {
+     "cost_usd": 0.48,
+     "hidden_test_score": 0.9984
+    }
+   }
+  },
+  {
+   "session": "sonnet, medium effort",
+   "setting": "down-only + effort",
+   "cost_usd": 0.86,
+   "cost_vs_off": 0.1047,
+   "cost_vs_off_per_run": [
+    0.0485,
+    0.1524
+   ],
+   "time_s": 358,
+   "time_vs_off": 0.2913,
+   "hidden_test_score": 0.9884,
+   "tasks_done_right": 13.67,
+   "routed_up": 0,
+   "routed_down": 4,
+   "effort_up": 3,
+   "effort_down": 4,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.03,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 0.21,
+     "hidden_test_score": 0.9667
+    },
+    "hard": {
+     "cost_usd": 0.62,
+     "hidden_test_score": 0.9984
+    }
+   }
+  },
+  {
+   "session": "sonnet, medium effort",
+   "setting": "both",
+   "cost_usd": 2.1,
+   "cost_vs_off": 1.7086,
+   "cost_vs_off_per_run": [
+    1.5514,
+    1.9219
+   ],
+   "time_s": 467,
+   "time_vs_off": 0.6813,
+   "hidden_test_score": 0.9884,
+   "tasks_done_right": 13.67,
+   "routed_up": 3,
+   "routed_down": 4,
+   "effort_up": 0,
+   "effort_down": 0,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.03,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 0.21,
+     "hidden_test_score": 0.9667
+    },
+    "hard": {
+     "cost_usd": 1.87,
+     "hidden_test_score": 0.9984
+    }
+   }
+  },
+  {
+   "session": "sonnet, medium effort",
+   "setting": "both + effort",
+   "cost_usd": 2.1,
+   "cost_vs_off": 1.7073,
+   "cost_vs_off_per_run": [
+    1.55,
+    1.9202
+   ],
+   "time_s": 466,
+   "time_vs_off": 0.6808,
+   "hidden_test_score": 0.9884,
+   "tasks_done_right": 13.67,
+   "routed_up": 3,
+   "routed_down": 4,
+   "effort_up": 0,
+   "effort_down": 4,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.03,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 0.21,
+     "hidden_test_score": 0.9667
+    },
+    "hard": {
+     "cost_usd": 1.87,
+     "hidden_test_score": 0.9984
+    }
+   }
+  },
+  {
+   "session": "sonnet, medium effort",
+   "setting": "none + effort",
+   "cost_usd": 0.91,
+   "cost_vs_off": 0.1779,
+   "cost_vs_off_per_run": [
+    0.1162,
+    0.2312
+   ],
+   "time_s": 353,
+   "time_vs_off": 0.2708,
+   "hidden_test_score": 0.9884,
+   "tasks_done_right": 13.67,
+   "routed_up": 0,
+   "routed_down": 0,
+   "effort_up": 3,
+   "effort_down": 4,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.08,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 0.21,
+     "hidden_test_score": 0.9667
+    },
+    "hard": {
+     "cost_usd": 0.62,
+     "hidden_test_score": 0.9984
+    }
+   }
+  },
+  {
+   "session": "opus, max effort",
+   "setting": "plugin off",
+   "cost_usd": 19.58,
+   "cost_vs_off": 0.0,
+   "cost_vs_off_per_run": [
+    0.0,
+    0.0
+   ],
+   "time_s": 5896,
+   "time_vs_off": 0.0,
+   "hidden_test_score": 0.9889,
+   "tasks_done_right": 14.0,
+   "routed_up": 0,
+   "routed_down": 0,
+   "effort_up": 0,
+   "effort_down": 0,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.51,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 3.77,
+     "hidden_test_score": 0.9667
+    },
+    "hard": {
+     "cost_usd": 15.3,
+     "hidden_test_score": 1.0
+    }
+   }
+  },
+  {
+   "session": "opus, max effort",
+   "setting": "down-only",
+   "cost_usd": 15.49,
+   "cost_vs_off": -0.2087,
+   "cost_vs_off_per_run": [
+    -0.268,
+    -0.1519
+   ],
+   "time_s": 5529,
+   "time_vs_off": -0.0622,
+   "hidden_test_score": 0.9926,
+   "tasks_done_right": 14.33,
+   "routed_up": 0,
+   "routed_down": 11,
+   "effort_up": 0,
+   "effort_down": 0,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.2,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 2.26,
+     "hidden_test_score": 0.9778
+    },
+    "hard": {
+     "cost_usd": 13.02,
+     "hidden_test_score": 1.0
+    }
+   }
+  },
+  {
+   "session": "opus, max effort",
+   "setting": "down-only + effort",
+   "cost_usd": 15.48,
+   "cost_vs_off": -0.209,
+   "cost_vs_off_per_run": [
+    -0.2684,
+    -0.1522
+   ],
+   "time_s": 5495,
+   "time_vs_off": -0.068,
+   "hidden_test_score": 0.9926,
+   "tasks_done_right": 14.33,
+   "routed_up": 0,
+   "routed_down": 11,
+   "effort_up": 0,
+   "effort_down": 4,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.2,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 2.26,
+     "hidden_test_score": 0.9778
+    },
+    "hard": {
+     "cost_usd": 13.02,
+     "hidden_test_score": 1.0
+    }
+   }
+  },
+  {
+   "session": "opus, max effort",
+   "setting": "both",
+   "cost_usd": 17.0,
+   "cost_vs_off": -0.1316,
+   "cost_vs_off_per_run": [
+    -0.2705,
+    0.0289
+   ],
+   "time_s": 4989,
+   "time_vs_off": -0.1539,
+   "hidden_test_score": 0.9926,
+   "tasks_done_right": 14.33,
+   "routed_up": 1,
+   "routed_down": 11,
+   "effort_up": 0,
+   "effort_down": 0,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.2,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 2.26,
+     "hidden_test_score": 0.9778
+    },
+    "hard": {
+     "cost_usd": 14.53,
+     "hidden_test_score": 1.0
+    }
+   }
+  },
+  {
+   "session": "opus, max effort",
+   "setting": "both + effort",
+   "cost_usd": 16.99,
+   "cost_vs_off": -0.1319,
+   "cost_vs_off_per_run": [
+    -0.2709,
+    0.0286
+   ],
+   "time_s": 4954,
+   "time_vs_off": -0.1597,
+   "hidden_test_score": 0.9926,
+   "tasks_done_right": 14.33,
+   "routed_up": 1,
+   "routed_down": 11,
+   "effort_up": 0,
+   "effort_down": 4,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.2,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 2.26,
+     "hidden_test_score": 0.9778
+    },
+    "hard": {
+     "cost_usd": 14.53,
+     "hidden_test_score": 1.0
+    }
+   }
+  },
+  {
+   "session": "opus, max effort",
+   "setting": "none + effort",
+   "cost_usd": 19.38,
+   "cost_vs_off": -0.01,
+   "cost_vs_off_per_run": [
+    -0.0138,
+    -0.0077
+   ],
+   "time_s": 5856,
+   "time_vs_off": -0.0068,
+   "hidden_test_score": 0.9889,
+   "tasks_done_right": 14.0,
+   "routed_up": 0,
+   "routed_down": 0,
+   "effort_up": 0,
+   "effort_down": 4,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.31,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 3.77,
+     "hidden_test_score": 0.9667
+    },
+    "hard": {
+     "cost_usd": 15.3,
+     "hidden_test_score": 1.0
+    }
+   }
+  },
+  {
+   "session": "fable, max effort",
+   "setting": "plugin off",
+   "cost_usd": 24.49,
+   "cost_vs_off": 0.0,
+   "cost_vs_off_per_run": [
+    0.0,
+    0.0
+   ],
+   "time_s": 3964,
+   "time_vs_off": 0.0,
+   "hidden_test_score": 0.9963,
+   "tasks_done_right": 14.67,
+   "routed_up": 0,
+   "routed_down": 0,
+   "effort_up": 0,
+   "effort_down": 0,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.91,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 4.7,
+     "hidden_test_score": 0.9889
+    },
+    "hard": {
+     "cost_usd": 18.88,
+     "hidden_test_score": 1.0
+    }
+   }
+  },
+  {
+   "session": "fable, max effort",
+   "setting": "down-only",
+   "cost_usd": 20.27,
+   "cost_vs_off": -0.1724,
+   "cost_vs_off_per_run": [
+    -0.2232,
+    -0.1273
+   ],
+   "time_s": 6716,
+   "time_vs_off": 0.6941,
+   "hidden_test_score": 1.0,
+   "tasks_done_right": 15.0,
+   "routed_up": 0,
+   "routed_down": 13,
+   "effort_up": 0,
+   "effort_down": 0,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.4,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 3.64,
+     "hidden_test_score": 1.0
+    },
+    "hard": {
+     "cost_usd": 16.22,
+     "hidden_test_score": 1.0
+    }
+   }
+  },
+  {
+   "session": "fable, max effort",
+   "setting": "down-only + effort",
+   "cost_usd": 20.25,
+   "cost_vs_off": -0.1731,
+   "cost_vs_off_per_run": [
+    -0.2238,
+    -0.1281
+   ],
+   "time_s": 6606,
+   "time_vs_off": 0.6662,
+   "hidden_test_score": 1.0,
+   "tasks_done_right": 15.0,
+   "routed_up": 0,
+   "routed_down": 13,
+   "effort_up": 0,
+   "effort_down": 4,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.39,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 3.64,
+     "hidden_test_score": 1.0
+    },
+    "hard": {
+     "cost_usd": 16.22,
+     "hidden_test_score": 1.0
+    }
+   }
+  },
+  {
+   "session": "fable, max effort",
+   "setting": "both",
+   "cost_usd": 20.27,
+   "cost_vs_off": -0.1724,
+   "cost_vs_off_per_run": [
+    -0.2232,
+    -0.1273
+   ],
+   "time_s": 6716,
+   "time_vs_off": 0.6941,
+   "hidden_test_score": 1.0,
+   "tasks_done_right": 15.0,
+   "routed_up": 0,
+   "routed_down": 13,
+   "effort_up": 0,
+   "effort_down": 0,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.4,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 3.64,
+     "hidden_test_score": 1.0
+    },
+    "hard": {
+     "cost_usd": 16.22,
+     "hidden_test_score": 1.0
+    }
+   }
+  },
+  {
+   "session": "fable, max effort",
+   "setting": "both + effort",
+   "cost_usd": 20.25,
+   "cost_vs_off": -0.1731,
+   "cost_vs_off_per_run": [
+    -0.2238,
+    -0.1281
+   ],
+   "time_s": 6606,
+   "time_vs_off": 0.6662,
+   "hidden_test_score": 1.0,
+   "tasks_done_right": 15.0,
+   "routed_up": 0,
+   "routed_down": 13,
+   "effort_up": 0,
+   "effort_down": 4,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.39,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 3.64,
+     "hidden_test_score": 1.0
+    },
+    "hard": {
+     "cost_usd": 16.22,
+     "hidden_test_score": 1.0
+    }
+   }
+  },
+  {
+   "session": "fable, max effort",
+   "setting": "none + effort",
+   "cost_usd": 24.26,
+   "cost_vs_off": -0.0093,
+   "cost_vs_off_per_run": [
+    -0.0121,
+    -0.0066
+   ],
+   "time_s": 3943,
+   "time_vs_off": -0.0054,
+   "hidden_test_score": 0.9963,
+   "tasks_done_right": 14.67,
+   "routed_up": 0,
+   "routed_down": 0,
+   "effort_up": 0,
+   "effort_down": 4,
+   "by_difficulty": {
+    "easy": {
+     "cost_usd": 0.68,
+     "hidden_test_score": 1.0
+    },
+    "medium": {
+     "cost_usd": 4.7,
+     "hidden_test_score": 0.9889
+    },
+    "hard": {
+     "cost_usd": 18.88,
+     "hidden_test_score": 1.0
+    }
+   }
+  }
+ ],
+ "tasks": [
+  {
+   "task": "E1",
+   "difficulty": "easy",
+   "prompt": "Which file and function in this project parse ISO 8601 dates? Answer with the file path and the function name only.",
+   "jev_tier": "haiku",
+   "jev_confidence": 0.81
+  },
+  {
+   "task": "E2",
+   "difficulty": "easy",
+   "prompt": "How many test methods does tests/test_cart.py define? Reply with the number only.",
+   "jev_tier": "haiku",
+   "jev_confidence": 1.0
+  },
+  {
+   "task": "E3",
+   "difficulty": "easy",
+   "prompt": "Rename the constant MAX_ITEMS to MAX_CART_ITEMS everywhere in the project.",
+   "jev_tier": "haiku",
+   "jev_confidence": 0.515
+  },
+  {
+   "task": "E4",
+   "difficulty": "easy",
+   "prompt": "Which exception does Cart.remove raise when the item is not in the cart? Reply with the class name only.",
+   "jev_tier": "haiku",
+   "jev_confidence": 0.965
+  },
+  {
+   "task": "E5",
+   "difficulty": "easy",
+   "prompt": "Fix the misspelling \"recieve\" wherever it appears in the project.",
+   "jev_tier": "haiku",
+   "jev_confidence": 0.86
+  },
+  {
+   "task": "M1",
+   "difficulty": "medium",
+   "prompt": "Add a --json option to the report command in shopkit/report.py. With it, print the report as one JSON object with the keys orders (an integer), revenue (a number in major units, e.g. 38.37) and top_product (the SKU, or null when there are no orders) instead of the text. Without the option the output must stay exactly as it is now.",
+   "jev_tier": "sonnet",
+   "jev_confidence": 0.95
+  },
+  {
+   "task": "M2",
+   "difficulty": "medium",
+   "prompt": "tests/test_inventory.py has a failing test. Find the cause and fix the code, not the test.",
+   "jev_tier": "sonnet",
+   "jev_confidence": 0.76
+  },
+  {
+   "task": "M3",
+   "difficulty": "medium",
+   "prompt": "Implement slugify in shopkit/textutil.py so that it follows its docstring.",
+   "jev_tier": "sonnet",
+   "jev_confidence": 0.915
+  },
+  {
+   "task": "M4",
+   "difficulty": "medium",
+   "prompt": "Add input validation to create_order in shopkit/orders.py. Reject an empty item list, a quantity that is not a positive integer, and a product_id the catalog does not have, each with a ValueError whose message names the field at fault: items, quantity or product_id. Valid orders must behave exactly as before.",
+   "jev_tier": "sonnet",
+   "jev_confidence": 0.94
+  },
+  {
+   "task": "M5",
+   "difficulty": "medium",
+   "prompt": "shopkit/orders.py and shopkit/returns.py contain the same address-validation code. Move it into a new module shopkit/validation.py as a function validate_address(address), use that function in both places, and keep the behaviour and the error messages exactly the same.",
+   "jev_tier": "sonnet",
+   "jev_confidence": 0.99
+  },
+  {
+   "task": "H1",
+   "difficulty": "hard",
+   "prompt": "Customers sometimes see an old price for a while right after we change a product's price, and nobody knows why. The cause could be anywhere between the admin tools, the catalog and the price cache. Investigate across the code, find the root cause, fix it properly rather than the symptom, and add a regression test.",
+   "jev_tier": "opus",
+   "jev_confidence": 0.99
+  },
+  {
+   "task": "H2",
+   "difficulty": "hard",
+   "prompt": "Implement merge_bookings in shopkit/scheduling.py so that it follows every rule in its docstring.",
+   "jev_tier": "sonnet",
+   "jev_confidence": 0.95
+  },
+  {
+   "task": "H3",
+   "difficulty": "hard",
+   "prompt": "The RateLimiter in shopkit/ratelimit.py is shared by many request threads. Review it for concurrency problems: under concurrent load it lets more requests through than it should, and users report that it refills more slowly than its rate. Find the causes, fix them without changing the public API, and make sure the fix stays correct under concurrent use.",
+   "jev_tier": "opus",
+   "jev_confidence": 0.84
+  },
+  {
+   "task": "H4",
+   "difficulty": "hard",
+   "prompt": "Implement evaluate in shopkit/formula.py, following the grammar, the semantics and the error messages described in the module docstring exactly.",
+   "jev_tier": "sonnet",
+   "jev_confidence": 0.925
+  },
+  {
+   "task": "H5",
+   "difficulty": "hard",
+   "prompt": "Take the order storage system from format v1 to format v2 (docs/storage-v2.md) end to end, autonomously: reading (old v1 files must still load), writing, a safe in-place migrate command exactly as the document specifies, the CLI and the tests. Plan the migration, implement every part, verify it, and keep going until the whole system works on v2 without supervision.",
+   "jev_tier": "fable",
+   "jev_confidence": 0.94
+  }
+ ],
+ "h4_runs": [
+  {
+   "session": "fable, max effort",
+   "settings": "plugin off",
+   "ran": "fable at max",
+   "run": 1,
+   "seconds": 429,
+   "cost_usd": 3.12,
+   "stopped_at_time_limit": false
+  },
+  {
+   "session": "fable, max effort",
+   "settings": "plugin off",
+   "ran": "fable at max",
+   "run": 2,
+   "seconds": 848,
+   "cost_usd": 4.4,
+   "stopped_at_time_limit": false
+  },
+  {
+   "session": "fable, max effort",
+   "settings": "plugin off",
+   "ran": "fable at max",
+   "run": 3,
+   "seconds": 619,
+   "cost_usd": 4.27,
+   "stopped_at_time_limit": false
+  },
+  {
+   "session": "fable, max effort",
+   "settings": "routed down (down-only, both and their effort variants)",
+   "ran": "sonnet at max",
+   "run": 1,
+   "seconds": 2400,
+   "cost_usd": 3.94,
+   "stopped_at_time_limit": true
+  },
+  {
+   "session": "fable, max effort",
+   "settings": "routed down (down-only, both and their effort variants)",
+   "ran": "sonnet at max",
+   "run": 2,
+   "seconds": 1506,
+   "cost_usd": 2.8,
+   "stopped_at_time_limit": false
+  },
+  {
+   "session": "fable, max effort",
+   "settings": "routed down (down-only, both and their effort variants)",
+   "ran": "sonnet at max",
+   "run": 3,
+   "seconds": 1442,
+   "cost_usd": 2.86,
+   "stopped_at_time_limit": false
+  },
+  {
+   "session": "opus, max effort",
+   "settings": "plugin off",
+   "ran": "opus at max",
+   "run": 1,
+   "seconds": 1347,
+   "cost_usd": 3.23,
+   "stopped_at_time_limit": false
+  },
+  {
+   "session": "opus, max effort",
+   "settings": "plugin off",
+   "ran": "opus at max",
+   "run": 2,
+   "seconds": 1149,
+   "cost_usd": 3.84,
+   "stopped_at_time_limit": false
+  },
+  {
+   "session": "opus, max effort",
+   "settings": "plugin off",
+   "ran": "opus at max",
+   "run": 3,
+   "seconds": 1473,
+   "cost_usd": 5.23,
+   "stopped_at_time_limit": false
+  },
+  {
+   "session": "opus, max effort",
+   "settings": "routed down (down-only, both and their effort variants)",
+   "ran": "sonnet at max",
+   "run": 1,
+   "seconds": 1403,
+   "cost_usd": 3.19,
+   "stopped_at_time_limit": false
+  },
+  {
+   "session": "opus, max effort",
+   "settings": "routed down (down-only, both and their effort variants)",
+   "ran": "sonnet at max",
+   "run": 2,
+   "seconds": 1124,
+   "cost_usd": 2.66,
+   "stopped_at_time_limit": false
+  },
+  {
+   "session": "opus, max effort",
+   "settings": "routed down (down-only, both and their effort variants)",
+   "ran": "sonnet at max",
+   "run": 3,
+   "seconds": 1184,
+   "cost_usd": 2.54,
+   "stopped_at_time_limit": false
+  }
+ ]
+}

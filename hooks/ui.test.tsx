@@ -67,25 +67,25 @@ test('the band shows the state and the last decision; its button turns routing o
   const w = world(on)
   await start($)
   const band = await mountBand($)
-  expect(await bandText(band)).toBe('jev ▸ on · down-only · effort on')
+  expect(await bandText(band)).toBe('jev ▸ on · down-only · effort off')
   expect((await band.find({ key: 'toggle' }))?.props.label).toBe('off')
   expect((await band.find({ key: 'open' }))?.type).toBe('Button')
   expect((await band.find({ key: 'hide' }))?.type).toBe('Button')
 
   await turn($, 'which file defines register?', 't1')
   expect(w.steps).toEqual([HAIKU])
-  expect(await bandText(band)).toBe('jev ▸ on · down-only · effort on · haiku (routed) 0.95')
+  expect(await bandText(band)).toBe('jev ▸ on · down-only · effort off · haiku (routed) 0.95')
   expect((await (await mountPane($)).find({ type: 'Text', text: /jev spend: 1 calls · 500 input tokens/ }))).toBeDefined()
 
   await band.press({ key: 'toggle' })
-  expect(await bandText(band)).toBe('jev ▸ off · down-only · effort on')
+  expect(await bandText(band)).toBe('jev ▸ off · down-only · effort off')
   expect((await band.find({ key: 'toggle' }))?.props.label).toBe('on')
   expect((await jev($)).text).toContain('off · routes each turn with Jev (session override; /jev on restores the setting)')
   await turn($, 'which file defines register?', 't2')
   expect(w.steps).toEqual([HAIKU, SONNET])
 
   await band.press({ key: 'toggle' })
-  expect(await bandText(band)).toBe('jev ▸ on · down-only · effort on · - (disabled)')
+  expect(await bandText(band)).toBe('jev ▸ on · down-only · effort off · - (disabled)')
   expect((await jev($)).text).toContain('on · routes each turn with Jev\n')
 })
 
@@ -93,9 +93,9 @@ test('the band shows the effort switch, so sessions that differ only there look 
   world(on)
   await start($)
   const band = await mountBand($)
-  expect(await bandText(band)).toBe('jev ▸ on · down-only · effort on')
-  await jev($, 'set effort false local')
   expect(await bandText(band)).toBe('jev ▸ on · down-only · effort off')
+  await jev($, 'set effort true local')
+  expect(await bandText(band)).toBe('jev ▸ on · down-only · effort on')
 })
 
 test('the settings button opens the panel', async ($, on) => {
@@ -113,13 +113,13 @@ test('the band yields to the survey, to band:false and to its own hide button', 
 
   await jev($, 'set band true local')
   const band = await mountBand($)
-  expect(await bandText(band)).toBe('jev ▸ on · down-only · effort on')
+  expect(await bandText(band)).toBe('jev ▸ on · down-only · effort off')
   expect(await bandText(await mountBand($, { ...BAND, hasSurvey: true }))).toBe(undefined)
 
   await band.press({ key: 'hide' })
   expect(await bandText(band)).toBe(undefined)
   await jev($, 'band on')
-  expect(await bandText(band)).toBe('jev ▸ on · down-only · effort on')
+  expect(await bandText(band)).toBe('jev ▸ on · down-only · effort off')
 })
 
 test('without a key the band says where to set it and offers no toggle', async ($, on) => {
@@ -138,7 +138,7 @@ test('the panel shows every setting with its source; its buttons write the local
   const row = async (re: RegExp) => (await pane.find({ type: 'Text', text: re }))?.text
   expect(await row(/^Jev routing · on$/)).toBe('Jev routing · on')
   expect(await row(/policy\s+down-only\s+← global/)).toBeDefined()
-  expect(await row(/effort\s+true\s+← global/)).toBeDefined()
+  expect(await row(/effort\s+false\s+← global/)).toBeDefined()
   expect(await row(/min_confidence\s+0\.6\s+← global/)).toBeDefined()
   expect(await row(/subagents\s+true\s+← global/)).toBeDefined()
   expect(await row(/band\s+shown\s+← global/)).toBeDefined()
@@ -159,9 +159,9 @@ test('the panel shows every setting with its source; its buttons write the local
   await pane.press({ key: 'subagents' })
   expect(await row(/subagents\s+false\s+← local/)).toBeDefined()
   await pane.press({ key: 'effort' })
-  expect(await row(/effort\s+false\s+← local/)).toBeDefined()
-  expect((await pane.find({ key: 'effort' }))?.props.label).toBe('turn on')
-  expect(JSON.parse(w.files[LOCAL]!).jevRouting).toEqual({ policy: 'both', min_confidence: 0.7, subagents: false, effort: false })
+  expect(await row(/effort\s+true\s+← local/)).toBeDefined()
+  expect((await pane.find({ key: 'effort' }))?.props.label).toBe('turn off')
+  expect(JSON.parse(w.files[LOCAL]!).jevRouting).toEqual({ policy: 'both', min_confidence: 0.7, subagents: false, effort: true })
 
   await pane.press({ key: 'scope' })
   expect(await row(/buttons 2–7 write to project: \/repo\/\.claude\/settings\.json/)).toBeDefined()
@@ -185,7 +185,7 @@ test('the panel hides and shows the band; a band turned off by its setting is tu
 
   await pane.press({ key: 'band' })
   expect(JSON.parse(w.files[LOCAL]!)).toEqual({ jevRouting: { band: true } })
-  expect(await bandText(band)).toBe('jev ▸ on · down-only · effort on')
+  expect(await bandText(band)).toBe('jev ▸ on · down-only · effort off')
   expect((await pane.find({ key: 'band' }))?.props.label).toBe('hide')
 
   await pane.press({ key: 'band' })
@@ -207,7 +207,7 @@ test('the band and the panel speak the chosen language', { options: { language: 
   world(on)
   await start($)
   const band = await mountBand($)
-  expect(await bandText(band)).toBe('jev ▸ 開 · down-only · effort 開')
+  expect(await bandText(band)).toBe('jev ▸ 開 · down-only · effort 關')
   expect((await band.find({ key: 'toggle' }))?.props.label).toBe('關')
   expect((await band.find({ key: 'open' }))?.props.label).toBe('設定')
   expect((await band.find({ key: 'hide' }))?.props.label).toBe('隱藏')
@@ -217,7 +217,7 @@ test('the band and the panel speak the chosen language', { options: { language: 
   expect((await pane.find({ key: 'policy' }))?.props.label).toBe('下一個：both')
   expect((await pane.find({ type: 'Text', text: /按鈕 2–7 寫到 local/ }))).toBeDefined()
   await band.press({ key: 'toggle' })
-  expect(await bandText(band)).toBe('jev ▸ 關 · down-only · effort 開')
+  expect(await bandText(band)).toBe('jev ▸ 關 · down-only · effort 關')
   expect((await pane.find({ type: 'Text', text: /Jev 路由 · 關（session 覆寫）/ }))).toBeDefined()
 })
 
@@ -225,7 +225,7 @@ test('outside full-screen rendering the band and the panel point at /tui fullscr
   world(on, { settings: { tui: 'default' } })
   await start($)
   const band = await mountBand($)
-  expect(await bandText(band)).toBe('jev ▸ on · down-only · effort on · /tui fullscreen works better here (docked panel, mouse)')
+  expect(await bandText(band)).toBe('jev ▸ on · down-only · effort off · /tui fullscreen works better here (docked panel, mouse)')
   const pane = await mountPane($)
   expect((await pane.find({ type: 'Text', text: /\/tui fullscreen/ }))?.props.color).toBe('yellow')
 })
@@ -233,7 +233,7 @@ test('outside full-screen rendering the band and the panel point at /tui fullscr
 test('with tui fullscreen, or no tui setting at all, there is no hint', async ($, on) => {
   world(on, { settings: { tui: 'fullscreen' } })
   await start($)
-  expect(await bandText(await mountBand($))).toBe('jev ▸ on · down-only · effort on')
+  expect(await bandText(await mountBand($))).toBe('jev ▸ on · down-only · effort off')
   expect(await (await mountPane($)).find({ type: 'Text', text: /\/tui fullscreen/ })).toBe(undefined)
 })
 
@@ -242,7 +242,7 @@ for (const surface of ['terminal', 'desktop', 'vscode', 'mobile'] as const) {
     world(on)
     await start($)
     const band = await $.ui.mount({ plugin: 'jev-routing', surface, component: 'AbovePrompt', props: BAND })
-    expect(await bandText(band)).toBe('jev ▸ on · down-only · effort on')
+    expect(await bandText(band)).toBe('jev ▸ on · down-only · effort off')
     const pane = await $.ui.mount({ plugin: 'jev-routing', surface, component: 'Pane', props: PANE, requestId: 'jev' })
     expect((await pane.find({ type: 'Text', text: /Jev routing/ }))?.text).toBe('Jev routing · on')
   })

@@ -135,7 +135,7 @@ test('a lookup prompt on a sonnet session runs on haiku', async ($, on) => {
   expect(Object.keys(body)).toEqual(['model', 'state', 'questions'])
   expect(Object.keys(body.state)).toEqual(['prompt'])
   expect(Object.keys(body.questions.tier.criteria)).toEqual(['haiku', 'sonnet', 'opus', 'fable'])
-  expect(last(w)).toBe('jev → haiku (routed, effort low)')
+  expect(last(w)).toBe('jev → haiku (routed)')
   expect((await jev($)).text).toContain('last: routed haiku conf=0.95')
 })
 
@@ -191,7 +191,7 @@ test('down-only never routes above the session model', async ($, on) => {
   await turn($, 'design the migration strategy', SONNET, 't1')
 
   expect(models(w)).toEqual([SONNET])
-  expect(last(w)).toBe('jev → opus (effort-up high)')
+  expect(last(w)).toBe('jev → opus (keep-policy)')
 })
 
 test('policy both routes up as well', { options: { policy: 'both' } }, async ($, on) => {
@@ -222,7 +222,7 @@ test('a session model without a tier word is kept under down-only', { options: {
   expect(last(w)).toBe('jev → opus (keep-unknown-model)')
 })
 
-test('a session model without a tier word gets a higher effort for an opus-tier prompt, never for a sonnet-tier one', async ($, on) => {
+test('a session model without a tier word gets a higher effort for an opus-tier prompt, never for a sonnet-tier one', { options: { effort: true } }, async ($, on) => {
   let answer = jevBody('opus', 0.95)
   const w = world(on, { jev: () => ok(answer) })
   await start($)
@@ -248,7 +248,7 @@ test('with the effort switch off only the model moves', { options: { effort: fal
   expect(rows.filter(r => r.ev === 'decision').map(r => r.effortSwitch)).toEqual([false, false])
 })
 
-test('the effort moves with the model down, and in its place when the policy keeps the model', async ($, on) => {
+test('the effort moves with the model down, and in its place when the policy keeps the model', { options: { effort: true } }, async ($, on) => {
   let answer = jevBody('haiku', 0.95)
   const w = world(on, { jev: () => ok(answer) })
   await start($)
@@ -320,7 +320,7 @@ test('a prompt with an image keeps the session model and effort without asking J
   expect(w.prompts).toEqual(['which file defines register?'])
   expect(models(w)).toEqual([SONNET, HAIKU])
   expect(w.steps[0]!.effort).toBe('medium')
-  expect(w.statuses.filter(s => s.startsWith('jev →'))).toEqual(['jev → - (keep-attachment)', 'jev → haiku (routed, effort low)'])
+  expect(w.statuses.filter(s => s.startsWith('jev →'))).toEqual(['jev → - (keep-attachment)', 'jev → haiku (routed)'])
 })
 
 test('an image without text is keep-attachment, not no-prompt; a document counts as well', async ($, on) => {
@@ -391,7 +391,7 @@ test('a routed model that gives no response leaves the retry on the session mode
 
 // ── policy effort-only ─────────────────────────────────────────────────────
 
-test('policy none keeps the model and lowers the effort for a haiku-tier prompt', { options: { policy: 'none' } }, async ($, on) => {
+test('policy none keeps the model and lowers the effort for a haiku-tier prompt', { options: { policy: 'none', effort: true } }, async ($, on) => {
   const w = world(on)
   await start($)
   await begin($, 't1', 'which file defines register?')
@@ -404,7 +404,7 @@ test('policy none keeps the model and lowers the effort for a haiku-tier prompt'
   expect((await jev($)).text).toContain('effort=low')
 })
 
-test('policy none raises the effort for an opus-tier prompt and leaves the session tier alone', { options: { policy: 'none' } }, async ($, on) => {
+test('policy none raises the effort for an opus-tier prompt and leaves the session tier alone', { options: { policy: 'none', effort: true } }, async ($, on) => {
   let answer = jevBody('opus', 0.9)
   const w = world(on, { jev: () => ok(answer) })
   await start($)
@@ -438,11 +438,11 @@ test('a fable session routes down by tier like any other', async ($, on) => {
   answer = jevBody('fable', 0.95)
   await turn($, 'build the whole workflow engine on your own', FABLE, 't3')
 
-  expect(w.steps.map(st => [st.model, st.effort])).toEqual([[HAIKU, 'low'], [OPUS, 'medium'], [FABLE, 'medium']])
-  expect(w.statuses.filter(st => st.startsWith('jev →'))).toEqual(['jev → haiku (routed, effort low)', 'jev → opus (routed)', 'jev → fable (keep-same)'])
+  expect(w.steps.map(st => [st.model, st.effort])).toEqual([[HAIKU, 'medium'], [OPUS, 'medium'], [FABLE, 'medium']])
+  expect(w.statuses.filter(st => st.startsWith('jev →'))).toEqual(['jev → haiku (routed)', 'jev → opus (routed)', 'jev → fable (keep-same)'])
 })
 
-test('a fable-tier prompt raises the effort where the policy keeps the model, and routes up under policy both', async ($, on) => {
+test('a fable-tier prompt raises the effort where the policy keeps the model, and routes up under policy both', { options: { effort: true } }, async ($, on) => {
   const w = world(on, { jev: () => ok(jevBody('fable', 0.9)) })
   await start($)
   await turn($, 'build the whole workflow engine on your own', OPUS, 't1')
@@ -452,6 +452,35 @@ test('a fable-tier prompt raises the effort where the policy keeps the model, an
 
   expect(w.steps.map(st => [st.model, st.effort])).toEqual([[OPUS, 'high'], [OPUS, 'xhigh'], [FABLE, 'medium']])
   expect(w.statuses.filter(st => st.startsWith('jev →'))).toEqual(['jev → fable (effort-up high)', 'jev → fable (keep-policy)', 'jev → fable (routed)'])
+})
+
+test('a turn routed down from above high effort runs at high, switch or not', async ($, on) => {
+  let answer = jevBody('sonnet', 0.95)
+  const w = world(on, { jev: () => ok(answer) })
+  await start($)
+  await turn($, 'write a test for parseSet', OPUS, 't1', { effort: 'max' })
+  answer = jevBody('haiku', 0.95)
+  await turn($, 'which file defines register?', FABLE, 't2', { effort: 'xhigh' })
+  await turn($, 'which file defines register?', SONNET, 't3', { effort: 'medium' })
+
+  expect(w.steps.map(st => [st.model, st.effort])).toEqual([[SONNET, 'high'], [HAIKU, 'high'], [HAIKU, 'medium']])
+  expect(w.statuses.filter(st => st.startsWith('jev →'))).toEqual(['jev → sonnet (routed, effort high)', 'jev → haiku (routed, effort high)', 'jev → haiku (routed)'])
+})
+
+test('with the effort switch on, a haiku-tier turn routed down from max runs at low', { options: { effort: true } }, async ($, on) => {
+  const w = world(on)
+  await start($)
+  await turn($, 'which file defines register?', OPUS, 't1', { effort: 'max' })
+
+  expect(w.steps.map(st => [st.model, st.effort])).toEqual([[HAIKU, 'low']])
+})
+
+test('a turn routed up keeps the session effort, even at max', { options: { policy: 'both' } }, async ($, on) => {
+  const w = world(on, { jev: () => ok(jevBody('opus', 0.95)) })
+  await start($)
+  await turn($, 'design the migration strategy', SONNET, 't1', { effort: 'max' })
+
+  expect(w.steps.map(st => [st.model, st.effort])).toEqual([[OPUS, 'max']])
 })
 
 test('an opus-tier prompt on a fable session never raises the effort', { options: { policy: 'none' } }, async ($, on) => {
@@ -876,7 +905,7 @@ test('the language setting picks the sentences; identifiers stay', { options: { 
   expect(text).toContain('開 · 每一輪都用 Jev 挑模型')
   expect(text).toMatch(/min_confidence\s+0\.6\s+← global/)
   expect(text).toContain('最近一次: routed haiku conf=0.95')
-  expect(w.statuses).toContain('jev → haiku (routed, effort low)')
+  expect(w.statuses).toContain('jev → haiku (routed)')
 
   expect((await jev($, 'set policy sideways')).text).toContain('不是 policy 的合法值')
   expect((await jev($, 'off')).text).toContain('這個 session 關閉')
@@ -924,7 +953,7 @@ test('the log records decisions and command verbs, never the arguments of a comm
   expect(text).not.toContain('test-key')
   // Each decision says whether the effort switch was on, beside the policy.
   const rows = text!.trim().split('\n').map(l => JSON.parse(l))
-  expect(rows.filter(r => r.ev === 'decision' || r.ev === 'agent.decision').map(r => [r.policy, r.effortSwitch])).toEqual([['down-only', true], ['down-only', true]])
+  expect(rows.filter(r => r.ev === 'decision' || r.ev === 'agent.decision').map(r => [r.policy, r.effortSwitch])).toEqual([['down-only', false], ['down-only', false]])
   // A subagent's row also says which model the engine started it on.
   expect(rows.filter(r => r.ev === 'agent.decision').map(r => [r.reason, r.model, r.startedModel])).toEqual([['routed', 'claude-haiku-5-5', 'claude-haiku-5-5']])
 })

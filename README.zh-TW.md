@@ -10,7 +10,7 @@
 
 - **預設只往下。** turn 永遠不會被路由到比 session 模型*更高*的一級。
 - **subagent 也路由。** 每個 subagent 的模型由它的任務說明決定。subagent 一開始就沒有 cache，所以這項永遠不會多付 cache 重寫 —— 這是唯一沒有副作用的省法。
-- **effort 也跟著動。** haiku 級的 prompt 用 `low`；級別比 session 高、又被 policy 留在 session 模型的 opus 級或 fable 級 prompt 用 `high`，用多想一點代替換更大的模型。實測換 effort 不會讓 prompt cache 失效。`policy none` + 這個開關就是完全不碰模型。
+- **往下換時，effort 最多 high。** 換到較低等級的 turn，effort 不會超過 high，所以 max effort 的 session 不會把 max effort 交給 sonnet 或 haiku。另有 **effort 開關**（預設關）：haiku 級的 prompt 用 `low`；級別比 session 高、又被 policy 留在原模型的 opus 級或 fable 級 prompt 用 `high`。實測換 effort 不會讓 prompt cache 失效。
 - **信心門檻。** Jev 信心低於 `min_confidence`（0.6）就留在 session 模型。用 0.1 的題目（三級）時，62 題由三位標籤者盲標，門檻之上的每一次路由都跟共識一致；0.2 題目的數字見「設定」。
 - **失敗就放行。** 逾時（2 秒）、HTTP 錯誤、沒有 key、被路由的模型沒有回應：turn 照常跑 session 模型，原因顯示在 `/jev status`。Jev 連續失敗三次（額度用完、key 失效、服務掛掉）就暫停問它五分鐘，所以 Jev 壞掉只會讓你多看到一行狀態。
 - **一條 band、一個面板。** prompt 上方一行顯示最近一次決定和開關；`/jev panel`（或 band 上的 *settings*）打開面板，每個設定一顆按鈕。兩者都能藏起來。
@@ -28,6 +28,25 @@
 | 從 sonnet session 派一個 subagent 數檔案 | US$0.224 | US$0.099 |
 
 opus 那條為什麼虧：**每碰一個模型，那個模型就要把整段對話寫進自己的 cache 一次。** 查詢丟給 haiku 省了那幾輪，但下一個 opus 級的 turn 來時，opus 要用 opus 的價錢把整段 context 寫進*它的* cache。session 模型越貴、那一刻的 context 越大，淨省就越少。sonnet session 明顯划算；短的 opus session 加一個長 opus turn 就不划算。subagent 路由與換 effort 沒有這個代價。
+
+### 矩陣實驗（2026 年 10 月）
+
+15 題單一 prompt 的程式題，用隱藏測試評分；4 種 session 模型、6 種設定，各跑 3 次，共 396 次 headless 執行。下表是和同一種 session 不裝 plugin 相比的花費：
+
+| Session | `down-only` | `both` | `none` + effort 開關 | 不裝 plugin 時做對的題數 |
+|---|---:|---:|---:|---:|
+| haiku，medium effort | ±0% | +2439% | +11% | 14.3 / 15 |
+| sonnet，medium effort | −8% | +171% | +18% | 13.7 |
+| opus，max effort | **−21%** | −13% | −1% | 14.0 |
+| fable，max effort | **−17%** | −17% | −1% | 14.7 |
+
+- 往下換從來沒讓做對的題數變少。haiku 往上換也沒有讓它變多：13.7 題對 14.3 題，差在有兩題各有一個隱藏測試，sonnet 比 haiku 更常沒過。
+- 往上換只會多花錢：haiku 本來就全做對，換大模型沒有可以提升的地方。
+- effort 開關在 opus、fable session 只省約 1%，在 haiku、sonnet session 多花 10–18%，所以 0.3.0 起預設關閉。
+- fable session 開 `down-only` 反而變慢，因為往下換的 turn 還維持 max effort：sonnet max 在一題難題上跑 24–40 分鐘，fable 只要 7–14 分鐘。0.3.0 起，往下換的 turn effort 最多 high。
+- 每題都是全新 session 的單一 prompt，所以這些執行都沒有付到上表那種重寫 cache 的代價。
+
+做法、所有表格與數據：[docs/matrix-2026-10.md](docs/matrix-2026-10.md)（英文）。
 
 Jev 本身：turn 內 p50 約 400 ms（p90 約 750 ms），每次 500–700 input tokens，每百萬 US$0.042，output 不計費 —— 每個決定約 US$0.00003。
 
@@ -58,7 +77,7 @@ claude --plugin-dir <這個 repo 的路徑>
 ## band 與面板
 
 ```
-jev ▸ on · down-only · effort on · haiku (routed) 0.95   off   settings   hide
+jev ▸ on · down-only · effort off · haiku (routed) 0.95   off   settings   hide
 ```
 
 band 在 prompt 上方，顯示路由開關、policy、effort 開關和最近一次決定。按鈕可以用滑鼠點，或在 band 取得焦點後用鍵盤（`ctrl+x` 再 `tab`）：`o` 切換這個 session 的路由，`s` 打開面板。*hide* 把它藏起來到 session 結束（`/jev band on` 叫回來）；`band` 設定可以永久關掉。Claude Code 顯示自己的意見問卷時，band 會讓位。
@@ -66,7 +85,7 @@ band 在 prompt 上方，顯示路由開關、policy、effort 開關和最近一
 ```
 Jev 路由 · 開                                      [1] 關閉
 policy          down-only   ← global               [2] 下一個：both
-effort          true        ← global               [3] 關閉
+effort          false       ← global               [3] 開啟
 min_confidence  0.6         ← global               [4] −0.1  [5] +0.1
 subagents       true        ← global               [6] 關閉
 band            顯示        ← global               [7] 隱藏
@@ -100,7 +119,7 @@ plugin 說的每一句話 —— band、面板、`/jev` 的回覆、狀態列 �
 |---|---|---|---|
 | `min_confidence` | 0–1 | 0.6 | Jev 信心低於此值時，turn 留在 session 模型 |
 | `policy` | `down-only` \| `both` \| `none` | `down-only` | Jev 可以做哪些模型切換：`down-only` 永不選比 session 模型高的級別；`both` 也往上（並付出 cache 重寫）；`none` 永不換模型（0.1.0 的 `effort-only` 會當成 `none`） |
-| `effort` | `true` \| `false` | `true` | effort 也跟著動：haiku 級的 prompt 用 `low`，級別比 session 高、又被 policy 留在 session 模型的 opus 級或 fable 級 prompt 用 `high`；不會重寫 cache |
+| `effort` | `true` \| `false` | `false` | effort 開關：haiku 級的 prompt 用 `low`，級別比 session 高、又被 policy 留在原模型的 opus 級或 fable 級 prompt 用 `high`；不會重寫 cache。預設關：矩陣實驗中它在 opus、fable session 只省約 1%，在 haiku、sonnet session 多花 10–18% |
 | `enabled` | `true` \| `false` | `true` | 關閉時每個 turn 都用 session 模型 |
 | `subagents` | `true` \| `false` | `true` | subagent 也依任務說明路由，同一套 policy、相對於它原本會用的模型 |
 | `band` | `true` \| `false` | `true` | 在 prompt 上方顯示 band |
@@ -147,7 +166,7 @@ plugin 說的每一句話 —— band、面板、`/jev` 的回覆、狀態列 �
 
 1. `turn.start` 記住這個 turn 的 prompt 文字，綁在 turn id 上。續行的 turn（沒有新輸入）、slash 指令、或引擎自己發起的 turn（背景任務完成的通知）沒有你的東西可判，直接留在 session 模型。slash 指令的 turn 會被引擎包在 `<command-message>` 與 `<command-name>` 裡；它的參數也不判，因為工作內容寫在指令本身，Jev 看不到。帶**附件**（圖片、文件）的 prompt 也留在 session 模型：`prompt.submit` 只告訴 plugin 有附件進來，不給內容，Jev 只能看文字判斷（「修這個」加一張截圖），所以這個 turn 在任何 policy 之下都保留 session 的模型與 effort（`keep-attachment`）。
 2. turn 的第一個 `turn.step` 把 prompt 連同前一次對話 —— 上一則 user prompt 與上一則 assistant 回覆，各截 300 字 —— 送到 `https://api.typesafe.ai/v1/systemone`，問一題四選一的 `choice`（criteria 在 `hooks/question.ts`：每一級先講任務需要什麼，再舉程式、寫作、研究、維運的例子），同時跟 2 秒逾時賽跑。帶前一次對話是為了讓很短的追問（「那另一個呢？」）能在上下文裡判斷；題目也告訴 Jev 不要讓不相干的上一題影響新題的級別。
-3. 依序過門：信心低於 `min_confidence` → 留；跟 session 同級 → 留。然後是模型，照 policy：`down-only` 之下，session 模型 id 看不出級別 → 留、級別比 session 高 → 留；`both` 一律換；`none` 一律不換。然後是 effort，開關開著時：haiku 級 → `low`（不管模型有沒有換）；級別比 session 高、又被 policy 留在原模型的 opus 級或 fable 級 → `high`（session 模型 id 看不出級別時，當成比較低）；往上換模型的 prompt 保留 session 的 effort。
+3. 依序過門：信心低於 `min_confidence` → 留；跟 session 同級 → 留。然後是模型，照 policy：`down-only` 之下，session 模型 id 看不出級別 → 留、級別比 session 高 → 留；`both` 一律換；`none` 一律不換。然後是 effort，開關開著時：haiku 級 → `low`（不管模型有沒有換）；級別比 session 高、又被 policy 留在原模型的 opus 級或 fable 級 → `high`（session 模型 id 看不出級別時，當成比較低）；往上換模型的 prompt 保留 session 的 effort。往下換的 turn，不管開關，effort 最多 `high`。
 4. 只有 `routed` 的決定會指定模型（`next({ ...e, model })`），只有帶 effort 的決定會指定 effort。同一 turn 後面的 step 沿用；其他欄位一律照引擎解析出來的放行，fallback 也包含在內。被路由的模型若沒有回應，重試就回到 session 模型。`turn.complete` 時忘掉這個 turn。
 5. `agent.spawn` 對每個 subagent 做一次同樣的事：只看任務說明，相對於呼叫指定的模型或父層的模型；路由了就設 subagent 的 `model`。續跑的 subagent（對已結束的 subagent 用 `SendMessage`）沿用它原本的模型，fork 一律用父層的模型：引擎會忽略為它們設的模型，所以兩者都不判（`keep-resume`、`keep-fork`）。
 6. 每個原因都看得到：`routed`、`effort-down`、`effort-up`、`keep-low-confidence`、`keep-same`、`keep-policy`、`keep-unknown-model`、`disabled`、`no-key`、`no-prompt`、`keep-attachment`、`keep-resume`、`keep-fork`、`paused`、`error`。
@@ -164,7 +183,7 @@ plugin 說的每一句話 —— band、面板、`/jev` 的回覆、狀態列 �
 
 ## 已知限制
 
-- **上面的 cache 帳。** session 模型很貴時，`down-only` 在重的 turn 接在被路由的 turn 之後會倒貼。你的用法是這樣的話，改 `policy none`：effort 開關照常運作，不碰 cache。不過這時 subagent 也不會被路由，因為 spawn 沒有 effort 可設。
+- **上面的 cache 帳。** session 模型很貴時，`down-only` 在重的 turn 接在被路由的 turn 之後會倒貼。你的用法是這樣的話，改 `policy none` 並打開 effort 開關：用 effort 代替換模型，不碰 cache。不過這時 subagent 也不會被路由，因為 spawn 沒有 effort 可設。
 - 路由只看 prompt 與前一次對話，不看整段對話。
 - slash 指令（skill、plugin 的指令）整個 turn 都留在 session 模型：工作內容寫在指令裡，Jev 看不到。所以很長的 skill 永遠不會被路由；它派出的 subagent 照常路由。
 - plugin 與 Jev 都看不到附件。prompt 帶圖片或文件的 turn 永遠不路由（`keep-attachment`），這些 turn 省不到錢；只寫了檔案路徑的 prompt 仍照文字判。
@@ -176,7 +195,7 @@ plugin 說的每一句話 —— band、面板、`/jev` 的回覆、狀態列 �
 
 ```
 claude plugin validate .
-claude plugin test .          # 106 個測試，不連網：Jev、時鐘、store、對話紀錄、檔案都是 mock；band 與面板在四種 surface 掛載並按過每顆按鈕
+claude plugin test .          # 109 個測試，不連網：Jev、時鐘、store、對話紀錄、檔案都是 mock；band 與面板在四種 surface 掛載並按過每顆按鈕
 ```
 
 ## 致謝

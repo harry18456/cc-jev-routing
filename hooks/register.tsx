@@ -3,7 +3,7 @@ import type { Register } from 'claude-code'
 import { CONTEXT_CHARS, question } from './question.ts'
 import {
   type Key, type Layer, type Settings,
-  DEFAULTS, SETTINGS_KEY, editSettingsText, effortFor, layerValues, parseSet, parseSettingsText, parseUnset, pickValid, resolve, statusText,
+  DEFAULTS, SETTINGS_KEY, downEffort, editSettingsText, effortFor, layerValues, parseSet, parseSettingsText, parseUnset, pickValid, resolve, statusText,
 } from './config.ts'
 import { EN, STRINGS, pickLang, type Strings } from './i18n.ts'
 import { cyclePolicy, describe, short, stepConfidence } from './view.ts'
@@ -427,6 +427,9 @@ async function decide($: any, base: Base, state: JevState, kind: 'turn' | 'agent
     if (decision.tier === 'haiku') effort = effortFor('haiku', base.effort)
     else if (above && model === base.model) effort = effortFor(decision.tier, base.effort)
   }
+  // A turn routed down runs at no more than high effort, switch or not.
+  const down = baseTier !== null && TIER_ORDER.indexOf(decision.tier) < TIER_ORDER.indexOf(baseTier)
+  if (kind === 'turn' && effort === null && model !== base.model && down) effort = downEffort(base.effort)
 
   if (model !== base.model) return { ...decision, model, ...(effort ? { effort } : {}) }
   if (effort) return { ...decision, reason: decision.tier === 'haiku' ? 'effort-down' : 'effort-up', model, effort }

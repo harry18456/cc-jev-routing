@@ -65,7 +65,7 @@ describe('resolve', () => {
   ]
   test('the highest layer that sets a key wins, per key', async () => {
     const { effective, source } = resolve(layers)
-    expect(effective).toEqual({ min_confidence: 0.5, policy: 'both', effort: true, enabled: true, subagents: true, band: true, language: 'auto' })
+    expect(effective).toEqual({ min_confidence: 0.5, policy: 'both', effort: false, enabled: true, subagents: true, band: true, language: 'auto' })
     expect(source).toEqual({ min_confidence: 'local', policy: 'project', effort: 'defaults', enabled: 'global', subagents: 'defaults', band: 'defaults', language: 'defaults' })
   })
   test('no layers means the defaults', async () => {
